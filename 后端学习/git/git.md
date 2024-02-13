@@ -79,9 +79,9 @@ HEAD文件中存储着分支，分支中有不同的版本号
 
   - $git log 查看日志 /git log --oneline
 
-  - $git add xxx  $git commit -m xxx
+  - git add xxx  git commit -m xxx
 
-  - $git restore、$git reset和$git revert
+  - git restore、git reset和$git revert
 
     $git restore无法恢复已经提交删除即将本地库内的也删掉时不能恢复；
 
@@ -113,12 +113,11 @@ HEAD文件中存储着分支，分支中有不同的版本号
 
   ![](git.assets/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-08-22%20174448.png)
 
-$git tag XXX 版本号后查询时可用$git log XXX查询，删除时可以用$git log -d XXX
+`$git tag XXX` 版本号后查询时可用$git log XXX查询，删除时可以用`$git log -d XXX`
 
 - ##### 远程管理
 
   - $git push xxx
   - $git pull   xxx
-
 
 
