@@ -248,3 +248,265 @@ String sql = "select * from player where name like ? for update";
 ```
 
 乐观锁：事务允许的并发，利用版本来区分事务。假设A，B二人拿到的事务版本为1.0，之后分别修改，A先提交事务将事务更新为1.1版本，当B提交事务的时候，发现事务的版本已经不是1.0了，就会将自己的事务回滚。
+
+#### 数据库连接池
+
+数据库连接池是一种创建和管理数据库连接的技术，其目的是重复使用数据库连接，而不是每次需要时都创建一个新的连接。这种技术可以显著提高对数据库的访问速度和效率。
+
+当一个应用程序需要与数据库交互时，它会从连接池中请求一个连接。当交互完成后，这个连接会被返回到连接池，而不是被关闭。这样，连接就可以被其他请求重复使用，从而减少了创建新连接的开销。
+
+数据库连接池通常会在启动时创建一定数量的连接，并在需要时动态增加或减少连接数量。这样可以保证在高负载情况下仍有足够的连接可用，同时在低负载情况下不会浪费资源。（类似于线程池）
+
+**常见的数据库连接池**
+
+在Java中，常见的数据库连接池实现包括C3P0、DBCP、HikariCP、Durid等。
+
+<img src="JDBC.assets/image-20240217165806825.png" alt="image-20240217165806825" style="zoom:80%;" />
+
+- 数据库连接池在JDBC的6个步骤中增加了创建连接池。
+
+**1. c3p0**
+
+通过xml文件配置
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<c3p0-config>
+    <!-- This app is massive! -->
+    <named-config name="intergalactoApp">
+    <!-- 数据库获取连接的基本信息-->
+        <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
+        <property name="jdbcUrl">jdbc:mysql://localhost:3306/game</property>
+        <property name="user">root</property>
+        <property name="password">Why721806</property>
+    <!-- 进行数据库管理的基本信息-->
+        <property name="acquireIncrement">5</property>
+        <property name="initialPoolSize">15</property>
+        <property name="minPoolSize">5</property>
+        <property name="maxPoolSize">100</property>
+
+        <!-- intergalactoApp adopts a different approach to configuring statement caching -->
+        <property name="maxStatements">0</property>
+        <property name="maxStatementsPerConnection">5</property>
+    </named-config>
+</c3p0-config>
+
+```
+
+```java
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+public class C3P0Config {
+    public static ComboPooledDataSource createDataSource1() {
+        //创建线程池
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        //配置数据库信息注册驱动
+        dataSource.setDriverClass("com.mysql.cj.jdbc.Driver");
+        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/mydatabase");
+        dataSource.setUser("root");
+        dataSource.setPassword("password");
+        // 其他配置参数...
+        return dataSource;
+    }
+    
+     public static ComboPooledDataSource createDataSource2() {
+        //创建线程池
+        ComboPooledDataSource dataSource = new ComboPooledDataSource("intergalactoApp");
+        //intergalactoApp同xml配置名称，配置的xml文件必须放在根路径下，否则读取不到
+         /* By default, c3p0 will look for an XML configuration file in its classloader's 		   resource path under the name "/c3p0-config.xml". That means the XML file should 			be placed in a directly or jar file directly named in your applications 				 CLASSPATH, 		  in WEB-INF/classes, or some similar location.*/
+        return dataSource;
+    }
+    
+    //获取连接代码 datasource.getConnnection();
+}
+```
+
+**2. DBCP**
+
+**DBCP配置文件**
+
+```properties
+DriverClassName=com.mysql.cj.jdbc.Driver
+#驱动注册
+url=jdbc:mysql://localhost:3306/game
+#要连接的数据库用户名
+username=root
+#要连接的数据库密码
+password=Why721806
+```
+
+**获取连接池等**
+
+```java
+public void testGetConnection2() throws SQLException, IOException {
+        Properties properties = new Properties();
+        //方式一
+//        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("");
+        FileInputStream is = new FileInputStream(new File("pojo/dbcp.properties"));
+    	//文件路径书写要正确
+        properties.load(is);
+        BasicDataSource dataSource = BasicDataSourceFactory.createDataSource(properties);
+		
+    	//获取连接
+        Connection conn = dataSource.getConnection();
+    }
+```
+
+**3. Druid**
+
+```properties
+#配置文件 druid.properties
+driverClassName=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql://localhost:3306/game
+username=root
+password=Why721806
+```
+
+```java
+//JDBC部分方法的封装
+
+import com.alibaba.druid.pool.DruidDataSourceFactory;
+import pojo.DruidTest;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.*;
+import java.util.Properties;
+
+/**
+ * 德鲁伊连接池
+ */
+public class JDBCUtils {
+
+    private static DataSource dataSource;
+    //构造方法私有化
+    private JDBCUtils() {
+    }
+    static { //静态代码块加载
+        try {
+            Properties pros = new Properties();
+      pros.load(DruidTest.class.getClassLoader().getResourceAsStream("pojo/druid.properties"));//路径需要书写正确
+            dataSource = DruidDataSourceFactory.createDataSource(pros);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
+    public static void close(Connection conn, Statement stem, ResultSet rs){
+        //同DBUtils的close方法
+    }
+}
+
+```
+
+#### apache-dbutils实现curb操作
+
+DbUtils是Apache组织提供的一个对JDBC进行简化封装的开源工具类库，可以简化JDBC应用程序的开发，同时不会影响程序的性能，默认是支持Druid和C3P0这样的数据库连接池的。
+
+<img src="JDBC.assets/image-20240218123122870.png" alt="image-20240218123122870" style="zoom:100%;" />
+
+在进行查找操作时，dbutils中的QueryRunner需要我们传入ResultSetHandler，由于ResultSetHandler是一个接口，所以我们需要传入实现类，实现类如上图。
+
+```java
+/**
+ * Common-dbutils测试之
+ * QueryRunner测试
+ */
+public class JDBCTest16 {
+    //测试插入
+    @Test
+    public void testInsert(){
+        QueryRunner runner = new QueryRunner();
+        Connection conn = null;
+        try {
+            //注意JDBCUtils是自己使用Druid连接池写的封装类
+             conn = JDBCUtils.getConnection();
+             String sql = "insert into t_user(loginName,loginPwd,realName) values (?,?,?)";
+            int i = runner.update(conn, sql, "xukun", "123", "蔡徐坤");
+            System.out.println(i==1 ? "成功" :"失败");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            JDBCUtils.close(conn,null,null);
+        }
+
+    }
+    //测试查询
+
+    /**
+     * MapHandler是ResultSetHandler的实现类，对应表中的一条数据
+     * 将字段以及相应字段的值封装为map
+     */
+    @Test
+    public void testQuery1(){
+        QueryRunner runner = new QueryRunner();
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "select * from t_user where id = ?";
+            MapHandler handler = new MapHandler();
+            Map<String, Object> query = runner.query(conn, sql, handler, 5);
+            System.out.println(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            JDBCUtils.close(conn,null,null);
+        }
+    }
+    /**
+     * MapListHandler是ResultSetHandler的实现类，对应表中的多条数据
+     * 将字段以及相应字段的值封装为map，将map装进List
+     */
+    @Test
+    public void testQuery2(){
+        QueryRunner runner = new QueryRunner();
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "select * from t_user";
+            MapListHandler handler = new MapListHandler();
+            List<Map<String, Object>> query = runner.query(conn, sql, handler);
+            query.forEach(System.out::println);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            JDBCUtils.close(conn,null,null);
+        }
+    }
+
+    /**
+     * ScalarHandler用于查询特殊值
+     */
+    @Test
+    public void testQuery3(){
+        QueryRunner runner = new QueryRunner();
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "select count(*) from t_user";
+            ScalarHandler<Long> handler = new ScalarHandler<>();
+            Long query = runner.query(conn, sql, handler);
+            System.out.println(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            JDBCUtils.close(conn,null,null);
+        }
+    }
+}
+```
+
+```java
+import org.apache.commons.dbutils.DbUtils;
+public class testClose{
+    public void close(Connection conn, Statement stem, ResultSet rs){
+            DbUtils.closeQuietly(conn);//悄悄地关闭Dbutils帮助你处理了异常
+            DbUtils.closeQuietly(stem);
+            DbUtils.closeQuietly(rs);
+    //        DbUtils.closeQuietly(conn, stem, rs);
+        }
+}
+```
+
