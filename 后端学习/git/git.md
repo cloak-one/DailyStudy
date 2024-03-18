@@ -113,7 +113,7 @@ HEAD文件中存储着分支，分支中有不同的版本号
 
   ![](git.assets/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202023-08-22%20174448.png)
 
-`$git tag XXX` 版本号后查询时可用$git log XXX查询，删除时可以用`$git log -d XXX`
+`$git tag XXX` 版本号后查询时可用`$git log XXX`查询，删除时可以用`$git log -d XXX`
 
 - ##### 远程管理
 
