@@ -12,7 +12,7 @@ SCM(Software Configuration Management)是指通过执行版本控制、变更控
 
 - #### 分布式版本控制
 
-  <img src="C:\Users\cloak\Pictures\Screenshots\屏幕截图 2023-08-21 180937.png" style="zoom:50%;" />
+  <img src="git.assets/image-20240323104612049.png" alt="image-20240323104612049" style="zoom:50%;" />
 
   特点：中央服务器跟本地做交互，不会因网络出现问题
 
@@ -25,8 +25,6 @@ SCM(Software Configuration Management)是指通过执行版本控制、变更控
 1. 保存和管理文件
 2. 提供客户端工具进行访问
 3. 提供不同版本文件得比对功能 
-
-
 
 ### git
 
@@ -119,5 +117,4 @@ HEAD文件中存储着分支，分支中有不同的版本号
 
   - $git push xxx
   - $git pull   xxx
-
 

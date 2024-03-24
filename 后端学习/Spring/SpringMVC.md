@@ -5474,3 +5474,9 @@ postHandle:与配置顺序相反，可能不运行
 afterCompletion:与配置顺序相反，可能不运行。
 
 这个顺序不太好记，最终只需要把握住一个原则即可:==以最终的运行结果为准==
+
+## 视频资料推荐
+
+【Spring MVC 教程 已完结（IDEA 2023最新版）4K蓝光画质 基于Spring6的全新重制版本 起立到起飞】 https://www.bilibili.com/video/BV1Lh4y1M7kx/?p=16&share_source=copy_web&vd_source=fd4d605d618b12d1ede0abcffd459f49
+
+【黑马SpringMVC教程全套视频教程，6小时精通spring mvc框架】 https://www.bilibili.com/video/BV1ZF411G7eP/?share_source=copy_web&vd_source=fd4d605d618b12d1ede0abcffd459f49

@@ -510,3 +510,6 @@ public class testClose{
 }
 ```
 
+### 资料推荐
+
+【JDBC从入门到精通视频教程-JDBC实战精讲】 https://www.bilibili.com/video/BV1Bt41137iB/?share_source=copy_web&vd_source=fd4d605d618b12d1ede0abcffd459f49
